@@ -1,0 +1,20 @@
+# openbmpd - openbmp collector daemon
+#
+description	"openbmpd collector daemon"
+
+start on startup
+stop on runlevel [06]
+
+kill timeout 20
+respawn limit 15 5
+
+#expect fork
+
+post-stop script
+    rm -f /var/run/openbmpd.pid
+end script
+
+script
+    [ -f /etc/default/openbmpd ] && . /etc/default/openbmpd
+    exec /usr/bin/openbmpd -f $OPENBMPD_OPTS
+end script

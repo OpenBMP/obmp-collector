@@ -1,0 +1,7 @@
+.idea
+cron_scripts/.idea
+build
+deb_package/*.cmake
+rpm_package/*.cmake
+mac_build
+**/.DS_Store

@@ -1,0 +1,15 @@
+LOGFILE=/var/log/openbmpd.log
+
+MYHOSTNAME=$(uname -n)
+
+CONFIG_FILE=/usr/etc/openbmp/openbmpd.conf
+PID_FILE=/var/run/openbmpd.pid
+
+if [ -f /usr/local/etc/openbmp/openbmpd.conf ]; then
+   CONFIG_FILE=/usr/local/etc/openbmp/openbmpd.conf
+
+elif [ -f /etc/openbmp/openbmpd.conf ]; then
+    CONFIG_FILE=/etc/openbmp/openbmpd.conf
+fi
+
+OPENBMPD_OPTS="-l $LOGFILE -pid $PID_FILE -c $CONFIG_FILE"
