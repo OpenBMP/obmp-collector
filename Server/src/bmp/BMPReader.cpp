@@ -136,7 +136,7 @@ bool BMPReader::ReadIncomingMsg(BMPListener::ClientInfo *client, MsgBusInterface
             mbus_ptr->update_Router(r_object, mbus_ptr->ROUTER_ACTION_FIRST);              // add the router entry
 
         // only process the peering info if the message includes it
-        if (bmp_type < 4) {
+        if (bmp_type != parseBMP::TYPE_INIT_MSG && bmp_type != parseBMP::TYPE_TERM_MSG) {
             // Update p_entry hash_id now that add_Router updated it.
             memcpy(p_entry.router_hash_id, r_object.hash_id, sizeof(r_object.hash_id));
             peer_info_key =  p_entry.peer_addr;
@@ -252,12 +252,62 @@ bool BMPReader::ReadIncomingMsg(BMPListener::ClientInfo *client, MsgBusInterface
                 break;
             }
 
+            case parseBMP::TYPE_ROUTE_MIRROR: { // Route mirroring type
+                pBMP->bufferBMPMessage(read_fd);
+                u_char *bufPtr = pBMP->bmp_data;
+
+                parseBMP::route_mirror_tlv mirror_tlv;
+
+
+                // There could be 2 or more TLVs.
+                for (int i = 0; i < pBMP->bmp_data_len; i += BMP_MIRROR_TLV_HDR_LEN) {
+                    memcpy(&mirror_tlv, bufPtr, BMP_MIRROR_TLV_HDR_LEN);
+                    mirror_tlv.data = NULL;
+                    bgp::SWAP_BYTES(&mirror_tlv.len);
+                    bgp::SWAP_BYTES(&mirror_tlv.type);
+
+                    bufPtr += BMP_MIRROR_TLV_HDR_LEN;                // Move pointer past the tlv header
+
+                    SELF_DEBUG("%s: route mirror TLV type %hu and length %hu being parsed",
+                               p_entry.peer_addr, mirror_tlv.type, mirror_tlv.len);
+
+                    if (mirror_tlv.len <= (i - pBMP->bmp_data_len)) {
+                        mirror_tlv.data = bufPtr;
+
+                        if (mirror_tlv.type == 0 /* BGP message */) {
+                            /*
+                             * Read and parse the the BGP message from the client.
+                             *     parseBGP will update kafka directly
+                             */
+                            pBGP = new parseBGP(logger, mbus_ptr, &p_entry, (char *)r_object.ip_addr,
+                                                &peer_info_map[peer_info_key]);
+
+                            if (cfg->debug_bgp)
+                                pBGP->enableDebug();
+
+                            pBGP->handleUpdate(mirror_tlv.data, mirror_tlv.len);
+                            delete pBGP;
+                        }
+
+                        bufPtr += mirror_tlv.len;
+                        i += mirror_tlv.len;
+
+                    } else {
+                        SELF_DEBUG("Dropping route mirror message due to length %hu > %d",
+                                   mirror_tlv.len, (i - pBMP->bmp_data_len));
+                        break;
+                    }
+                }
+
+                break;
+            }
+
             case parseBMP::TYPE_ROUTE_MON : { // Route monitoring type
                 pBMP->bufferBMPMessage(read_fd);
 
                 /*
                  * Read and parse the the BGP message from the client.
-                 *     parseBGP will update mysql directly
+                 *     parseBGP will update kafka directly
                  */
                 pBGP = new parseBGP(logger, mbus_ptr, &p_entry, (char *)r_object.ip_addr,
                                     &peer_info_map[peer_info_key]);
@@ -267,20 +317,21 @@ bool BMPReader::ReadIncomingMsg(BMPListener::ClientInfo *client, MsgBusInterface
 
                 pBGP->handleUpdate(pBMP->bmp_data, pBMP->bmp_data_len);
    		
-		string str(reinterpret_cast<char*>(client->hash_id), 16);  //storing the client hash in a string 
-		if(client->initRec && cfg->router_baseline_time.find(str) == cfg->router_baseline_time.end())	
-                //check if client has received init message and Baseline time is not already calculated
-		{
-		    peer_info_map_iter it = peer_info_map.begin();
-		    while (it != peer_info_map.end() && it->second.endOfRIB)
-		        ++it;
+                string str(reinterpret_cast<char*>(client->hash_id), 16);  //storing the client hash in a string
+                if(client->initRec && cfg->router_baseline_time.find(str) == cfg->router_baseline_time.end())
+                        //check if client has received init message and Baseline time is not already calculated
+                {
+                    peer_info_map_iter it = peer_info_map.begin();
+                    while (it != peer_info_map.end() && it->second.endOfRIB)
+                        ++it;
 
-		    if (it == peer_info_map.end() || checkRIBdumpRate(p_entry.timestamp_secs,mbus_ptr->ribSeq)) {  //End-Of-RIBs are received for all peers.
-		        timeval now;
-		        gettimeofday(&now, NULL);
-		        cfg->router_baseline_time[str] = 1.2 * (now.tv_sec - client->startTime.tv_sec);  //20% buffer for baseline time 
-		    }		
-		}
+                    if (it == peer_info_map.end() || checkRIBdumpRate(p_entry.timestamp_secs,mbus_ptr->ribSeq)) {  //End-Of-RIBs are received for all peers.
+                        timeval now;
+                        gettimeofday(&now, NULL);
+                        cfg->router_baseline_time[str] = 1.2 * (now.tv_sec - client->startTime.tv_sec);  //20% buffer for baseline time
+                    }
+                }
+
                 delete pBGP;
 
                 break;

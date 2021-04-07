@@ -95,7 +95,7 @@ char parseBMP::handleMessage(int sock) {
         throw "(3) Cannot read the BMP version byte from socket";
 
     // check the version
-    if (ver == 3) { // draft-ietf-grow-bmp-04 - 07
+    if (ver == 3) { // / RFC7854
         parseBMPv3(sock);
     }
 
@@ -311,6 +311,11 @@ void parseBMP::parseBMPv3(int sock) {
     switch (c_hdr.type) {
         case TYPE_ROUTE_MON: // Route monitoring
             SELF_DEBUG("BMP MSG : route monitor");
+            parsePeerHdr(sock);
+            break;
+
+        case TYPE_ROUTE_MIRROR: // Route Mirroring
+            SELF_DEBUG("BMP MSG : route mirroring");
             parsePeerHdr(sock);
             break;
 
