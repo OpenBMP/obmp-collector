@@ -21,7 +21,8 @@
 #define BMP_HDRv3_LEN 5             ///< BMP v3 header length, not counting the version
 #define BMP_HDRv1v2_LEN 43
 #define BMP_PEER_HDR_LEN 42         ///< BMP peer header length
-#define BMP_INFO_TLV_HDR_LEN 4          ///< BMP init message header length, does not count the info field
+#define BMP_INFO_TLV_HDR_LEN 4      ///< BMP info message header length, does not count the info field
+#define BMP_MIRROR_TLV_HDR_LEN 4    ///< BMP route mirroring TLV header length
 #define BMP_TERM_MSG_LEN 4          ///< BMP term message header length, does not count the info field
 #define BMP_PEER_UP_HDR_LEN 20      ///< BMP peer up event header size not including the recv/sent open param message
 #define BMP_PACKET_BUF_SIZE 68000   ///< Size of the BMP packet buffer (memory)
@@ -39,7 +40,7 @@ public:
      * BMP common header types
      */
      enum BMP_TYPE { TYPE_ROUTE_MON=0, TYPE_STATS_REPORT, TYPE_PEER_DOWN,
-                    TYPE_PEER_UP, TYPE_INIT_MSG, TYPE_TERM_MSG };
+                    TYPE_PEER_UP, TYPE_INIT_MSG, TYPE_TERM_MSG, TYPE_ROUTE_MIRROR };
 
      /**
       * BMP stats types
@@ -113,6 +114,17 @@ public:
          uint16_t        len;               ///< 2 bytes - Length of the information that follows
 
          char           *info;              ///< Information - variable
+
+     } __attribute__ ((__packed__));
+
+     /**
+     * BMP Route Mirroring TLV
+     */
+     struct route_mirror_tlv {
+         uint16_t        type;              ///< 2 bytes - Information type
+         uint16_t        len;               ///< 2 bytes - Length of the information that follows
+
+         u_char          *data;              ///< Data - variable
 
      } __attribute__ ((__packed__));
 

@@ -67,6 +67,25 @@ find_library(LIBRT_LIBRARY
         lib64
         lib)
 
+find_library(LIBZSTD_LIBRARY
+        NAMES
+        zstd
+        HINTS
+        ${HINT_ROOT_DIR}
+        PATH_SUFFIXES
+        lib64
+        lib)
+
+find_library(LIBLZ4_LIBRARY
+        NAMES
+        lz4
+        HINTS
+        ${HINT_ROOT_DIR}
+        PATH_SUFFIXES
+        lib64
+        lib)
+
+
 if (NOT LIBRDKAFKA_INCLUDE_DIR OR NOT LIBRDKAFKA_LIBRARY OR NOT LIBRDKAFKA_CPP_LIBRARY)
 	Message (FATAL_ERROR "Librdkafka was not found, cannot proceed.  Visit https://github.com/edenhill/librdkafka for details on how to install it.")
 #else ()
@@ -115,7 +134,7 @@ set (SRC_FILES
     )
 
 # Disable warnings
-add_definitions ("-Wno-unused-result")
+add_definitions ("-Wno-unused-result -Wno-address-of-packed-member")
 
 # Add C++11
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR CMAKE_COMPILER_IS_GNUCXX)
@@ -134,7 +153,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 # Set the libs to link
-set (LIBS pthread ${LIBYAML_CPP_LIBRARY} ${LIBRDKAFKA_CPP_LIBRARY} ${LIBRDKAFKA_LIBRARY} z ${SSL_LIBS} dl)
+set (LIBS pthread ${LIBYAML_CPP_LIBRARY} ${LIBRDKAFKA_CPP_LIBRARY} ${LIBRDKAFKA_LIBRARY} z ${SSL_LIBS} ${LIBLZ4_LIBRARY} ${LIBZSTD_LIBRARY} dl)
 
 # Set the binary
 add_executable (openbmpd ${SRC_FILES})
