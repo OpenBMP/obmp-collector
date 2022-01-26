@@ -138,7 +138,7 @@ namespace bgp_msg {
                 break;
             }
             default:
-                LOG_WARN("%s: MP_REACH Cannot parse ethernet segment identifyer type: %d", type);
+                LOG_WARN("%s: MP_REACH Cannot parse ethernet segment identifyer type: %d", peer_addr.c_str(), type);
                 break;
         }
 
