@@ -88,7 +88,7 @@ msgBus_kafka::msgBus_kafka(Logger *logPtr, Config *cfg, u_char *c_hash_id) {
  */
 msgBus_kafka::~msgBus_kafka() {
 
-    SELF_DEBUG("Destory msgBus Kafka instance");
+    SELF_DEBUG("Destroy msgBus Kafka instance");
 
     // Disconnect/term the router if not already done
     MsgBusInterface::obj_router r_object;
@@ -130,7 +130,7 @@ void msgBus_kafka::disconnect(int wait_ms) {
 
     if (isConnected) {
         int i = 0;
-        while (producer->outq_len() > 0 and i < 8) {
+        while (producer->outq_len() > 0 and i < 30) {
             LOG_INFO("Waiting for producer to finish before disconnecting: outq=%d", producer->outq_len());
             producer->poll(500);
             i++;
@@ -241,17 +241,7 @@ void msgBus_kafka::connect() {
        throw "ERROR: Failed to configure receive max message size";
     }
 
-    // Client group session and failure detection timeout
-    sess_timeout << cfg->session_timeout;
-    if (conf->set("session.timeout.ms", sess_timeout.str(), 
-                             errstr) != RdKafka::Conf::CONF_OK) 
-    {
-       LOG_ERR("Failed to configure session timeout for kafka: %s",
-                               errstr.c_str());
-       throw "ERROR: Failed to configure session timeout ";
-    } 
-    
-    // Timeout for network requests 
+    // Timeout for network requests
     socket_timeout << cfg->socket_timeout;
     if (conf->set("socket.timeout.ms", socket_timeout.str(), 
                              errstr) != RdKafka::Conf::CONF_OK) 
@@ -332,7 +322,10 @@ void msgBus_kafka::connect() {
 
     isConnected = true;
 
-    producer->poll(1000);
+    // Poll for a few seconds to see if there are any errors or other events
+    for (int i=0; i < 10; i++) {
+        producer->poll(500);
+    }
 
     if (not isConnected) {
         LOG_ERR("rtr=%s: Failed to connect to Kafka, will try again in a few", router_ip.c_str());

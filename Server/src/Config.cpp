@@ -43,7 +43,6 @@ Config::Config() {
     kafka_brokers       = "localhost:9092";
     tx_max_bytes        = 1000000;
     rx_max_bytes        = 100000000;
-    session_timeout     = 30000;	// Default is 30 seconds
     socket_timeout	    = 60000; 	// Default is 60 seconds
     q_buf_max_msgs      = 100000;
     q_buf_max_kbytes    = 1048576;
@@ -427,25 +426,7 @@ void Config::parseKafka(const YAML::Node &node) {
         }
     }
 
-    if (node["session.timeout.ms"]  && 
-        node["session.timeout.ms"].Type() == YAML::NodeType::Scalar) {
-        try {
-            session_timeout = node["session.timeout.ms"].as<int>();
-
-            if (session_timeout < 1 || session_timeout > 3600000)
-               throw "invalid receive max bytes , should be "
-				"in range 1 - 3600000";
-            if (debug_general)
-                   std::cout << "   Config: session timeout in ms: " << session_timeout
-				 << std::endl;
-
-        } catch (YAML::TypedBadConversion<int> err) {
-                printWarning("session_timeout is not of type int", 
-				node["session.timeout.ms"]);
-        }
-    }
-
-    if (node["socket.timeout.ms"]  && 
+    if (node["socket.timeout.ms"]  &&
         node["socket.timeout.ms"].Type() == YAML::NodeType::Scalar) {
         try {
             socket_timeout = node["socket.timeout.ms"].as<int>();
