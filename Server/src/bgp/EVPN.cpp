@@ -183,7 +183,7 @@ namespace bgp_msg {
 
                 *rd_assigned_number = val_ss.str();
 
-                val_ss.clear();
+                val_ss.str(std::string());
                 val_ss << administration_subfield;
                 *rd_administrator_subfield = val_ss.str();
 
@@ -231,7 +231,7 @@ namespace bgp_msg {
                 val_ss << assigned_number_subfield;
                 *rd_assigned_number = val_ss.str();
 
-                val_ss.clear();
+                val_ss.str(std::string());
                 val_ss << administration_subfield;
                 *rd_administrator_subfield = val_ss.str();
 
