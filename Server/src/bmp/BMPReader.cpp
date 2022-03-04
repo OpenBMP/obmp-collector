@@ -132,8 +132,10 @@ bool BMPReader::ReadIncomingMsg(BMPListener::ClientInfo *client, MsgBusInterface
          *  add record to the database
          */
 
+        /* Removed - We no longer add router entries to the DB unless we receive a router entry first
         if (bmp_type != parseBMP::TYPE_INIT_MSG)
             mbus_ptr->update_Router(r_object, mbus_ptr->ROUTER_ACTION_FIRST);              // add the router entry
+        */
 
         // only process the peering info if the message includes it
         if (bmp_type != parseBMP::TYPE_INIT_MSG && bmp_type != parseBMP::TYPE_TERM_MSG) {
@@ -204,7 +206,8 @@ bool BMPReader::ReadIncomingMsg(BMPListener::ClientInfo *client, MsgBusInterface
                     delete pBGP;            // Free the bgp parser after each use.
 
                     // Add event to the database
-                    mbus_ptr->update_Peer(p_entry, NULL, &down_event, mbus_ptr->PEER_ACTION_DOWN);
+                    if (client->initRec) // Require router init first
+                        mbus_ptr->update_Peer(p_entry, NULL, &down_event, mbus_ptr->PEER_ACTION_DOWN);
 
                 } else {
                     LOG_ERR("Error with client socket %d", read_fd);
@@ -244,7 +247,8 @@ bool BMPReader::ReadIncomingMsg(BMPListener::ClientInfo *client, MsgBusInterface
                     }
 
                     // Add the up event to the DB
-                    mbus_ptr->update_Peer(p_entry, &up_event, NULL, mbus_ptr->PEER_ACTION_UP);
+                    if (client->initRec) // Require router init first
+                        mbus_ptr->update_Peer(p_entry, &up_event, NULL, mbus_ptr->PEER_ACTION_UP);
 
                 } else {
                     LOG_NOTICE("%s: PEER UP Received but failed to parse the BMP header.", client->c_ip);
@@ -340,8 +344,10 @@ bool BMPReader::ReadIncomingMsg(BMPListener::ClientInfo *client, MsgBusInterface
             case parseBMP::TYPE_STATS_REPORT : { // Stats Report
                 MsgBusInterface::obj_stats_report stats = {};
                 if (! pBMP->handleStatsReport(read_fd, stats))
+
                     // Add to mysql
-                    mbus_ptr->add_StatReport(p_entry, stats);
+                    if (client->initRec) // Require router init first
+                        mbus_ptr->add_StatReport(p_entry, stats);
 
                 break;
             }
@@ -388,7 +394,8 @@ bool BMPReader::ReadIncomingMsg(BMPListener::ClientInfo *client, MsgBusInterface
     }
     
     // Send BMP RAW packet data
-    mbus_ptr->send_bmp_raw(router_hash_id, p_entry, pBMP->bmp_packet, pBMP->bmp_packet_len);
+    if (client->initRec) // Require router init first
+        mbus_ptr->send_bmp_raw(router_hash_id, p_entry, pBMP->bmp_packet, pBMP->bmp_packet_len);
 
     // Free the bmp parser
     delete pBMP;
@@ -446,7 +453,8 @@ void BMPReader::disconnect(BMPListener::ClientInfo *client, MsgBusInterface *mbu
     if (reason_text != NULL)
         snprintf(r_object.term_reason_text, sizeof(r_object.term_reason_text), "%s", reason_text);
 
-    mbus_ptr->update_Router(r_object, mbus_ptr->ROUTER_ACTION_TERM);
+    if (client->initRec)
+        mbus_ptr->update_Router(r_object, mbus_ptr->ROUTER_ACTION_TERM);
 
     close(client->c_sock);
     client->c_sock = 0;
