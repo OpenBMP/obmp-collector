@@ -107,7 +107,7 @@ namespace bgp_msg {
                 case EXT_TYPE_FLOW_SPEC : // TODO: Implement
                 case EXT_TYPE_COS_CAP   : // TODO: Implement
                 default:
-                    LOG_INFO("%s: Extended community type %d,%d is not yet supported", peer_addr.c_str(),
+                    SELF_DEBUG("%s: Extended community type %d,%d is not yet supported", peer_addr.c_str(),
                             ec_hdr.high_type, ec_hdr.low_type);
             }
 
@@ -282,7 +282,7 @@ namespace bgp_msg {
                 break;
 
             default :
-                LOG_INFO("%s: Extended community common type %d subtype = %d is not yet supported", peer_addr.c_str(),
+                SELF_DEBUG("%s: Extended community common type %d subtype = %d is not yet supported", peer_addr.c_str(),
                         ec_hdr.high_type, ec_hdr.low_type);
                 break;
         }
@@ -665,7 +665,7 @@ namespace bgp_msg {
                 break;
 
             default :
-                LOG_INFO("%s: Extended community ipv6 specific type %d subtype = %d is not yet supported", peer_addr.c_str(),
+                SELF_DEBUG("%s: Extended community ipv6 specific type %d subtype = %d is not yet supported", peer_addr.c_str(),
                         ec_hdr.high_type, ec_hdr.low_type);
                 break;
         }

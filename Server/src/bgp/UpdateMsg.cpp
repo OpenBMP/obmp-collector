@@ -517,7 +517,7 @@ void UpdateMsg::parseAttrData(u_char attr_type, uint16_t attr_len, u_char *data,
         }
 
         default:
-            LOG_INFO("%s: rtr=%s: attribute type %d is not yet implemented or intentionally ignored, skipping for now.",
+            SELF_DEBUG("%s: rtr=%s: attribute type %d is not yet implemented or intentionally ignored, skipping for now.",
                     peer_addr.c_str(), router_addr.c_str(), attr_type);
             break;
 

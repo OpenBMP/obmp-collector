@@ -492,7 +492,7 @@ void parseBMP::parsePeerHdr(int sock) {
     bgp::SWAP_BYTES(&p_hdr.ts_secs);
     bgp::SWAP_BYTES(&p_hdr.ts_usecs);
 
-    if (p_hdr.ts_secs != 0) {
+    if (p_hdr.ts_secs != 0 && p_hdr.ts_secs >= 946684800 /* Jan-1-2000 00:00:00 */) {
         p_entry->timestamp_secs = p_hdr.ts_secs;
 
         if (p_hdr.ts_usecs < 1000000)

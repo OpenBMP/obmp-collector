@@ -202,11 +202,8 @@ void MPReachAttr::parseAfi_IPv4IPv6(bool isIPv4, mp_reach_nlri &nlri, UpdateMsg:
 
         case bgp::BGP_SAFI_MPLS: {
 
-            if (isIPv4) {
-                //Next hop encoded in 12 bytes, last 4 bytes = IPv4
-                nlri.next_hop += 8;
-                nlri.nh_len -= 8;
-            }
+            nlri.next_hop += 8; // move past the RD
+            nlri.nh_len -= 8;
 
             // Next-hop is an IP address - Change/set the next-hop attribute in parsed data to use this next-hop
             if (nlri.nh_len > 16)
