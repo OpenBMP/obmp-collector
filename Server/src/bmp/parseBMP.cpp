@@ -377,6 +377,9 @@ void parseBMP::parsePeerFlags(u_char peer_type, u_char peer_flags) {
             if (peer_flags & 0x10) { // O flag of 1 means this is Adj-Rib-Out
                 SELF_DEBUG("Msg is for Adj-RIB-Out");
                 p_entry->isAdjIn = false;
+            } else {
+                SELF_DEBUG("Msg is for Adj-RIB-In");
+                p_entry->isAdjIn = true; // This is Adj-RIB-In
             }
 
             if (peer_flags & 0x20) { // A flag of 1 means 2-octet encoding
@@ -384,13 +387,12 @@ void parseBMP::parsePeerFlags(u_char peer_type, u_char peer_flags) {
                 p_entry->isTwoOctet = true;
             }
 
-            if (peer_flags & 0x40) { // L flag of 1 means this is post-policy of Adj-RIB-In
-                SELF_DEBUG("Msg is for POST-POLICY Adj-RIB-In");
+            if (peer_flags & 0x40) { // L flag of 1 means this is post-policy
+                SELF_DEBUG("Msg is for POST-POLICY");
                 p_entry->isPrePolicy = false;
             } else {
-                SELF_DEBUG("Msg is for PRE-POLICY Adj-RIB-In");
+                SELF_DEBUG("Msg is for PRE-POLICY");
                 p_entry->isPrePolicy = true;
-                p_entry->isAdjIn = true;
             }
 
             // Is peer type L3VPN peer or global instance
