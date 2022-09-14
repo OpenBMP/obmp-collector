@@ -64,10 +64,6 @@ BMPReader::~BMPReader() {
  * \param [in]  run         Reference to bool to indicate if loop should continue or not
  * \param [in]  client      Client information pointer
  * \param [in]  mbus_ptr     The database pointer referencer - DB should be already initialized
- *
- * \return true if more to read, false if the connection is done/closed
- *
- * \throw (char const *str) message indicate error
  */
 void BMPReader::readerThreadLoop(bool &run, BMPListener::ClientInfo *client, MsgBusInterface *mbus_ptr) {
     while (run) {

@@ -27,7 +27,7 @@ Feature | Description
 -------: | -----------
 RPKI/IRR | RPKI and IRR integration enables security analysis of monitored prefixes and ASN's.  Try it out using the containers **openbmp/aio** and **openbmp/ui** .
 Topic Mapping | Dynamic and customizable topic names. Scale Kafka consumers by partition and topic
-draft-ietf-grow-bmp | BMP Version 3 with backwards compatibility with older drafts
+RFCs | RFC7854, RFC8671, RFC9069 supported
 Apache Kafka | Producer of parsed and RAW BMP feeds, multiple consumers available
 Database | Access to all collected data via standard ODBC/DB drivers (openbmp-mysql-consumer)
 File Logging | All parsed messages can be logged to files, including BMP binary streams (openbmp-file-consumer)
@@ -35,7 +35,8 @@ IPv4 | IPv4 Unicast routing table information
 IPv6 | IPv6 Unicast routing table information
 bgp-ls| [RFC7752](https://tools.ietf.org/html/rfc7752)
 Extended Communities | Roughly all of them
-VPNv4 | L3VPN routing information (within VRF)
+VPNv4 | MPLS L3VPN routing information
+VPNv6 | MPLS L3VPN routing information 
 
 So much more...
 

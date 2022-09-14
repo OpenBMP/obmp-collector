@@ -401,7 +401,12 @@ void msgBus_kafka::produce(const char *topic_var, char *msg, size_t msg_size, in
                                                     producer_buf, msg_size + len,
                                                     (const std::string *) &key, NULL);
         if (resp != RdKafka::ERR_NO_ERROR) {
-            LOG_ERR("rtr=%s: Failed to produce message: %s", router_ip.c_str(), RdKafka::err2str(resp).c_str());
+            if (resp == RdKafka::ERR__QUEUE_FULL) {
+              producer->poll(100);
+              produce(topic_var, msg, msg_size, rows, key, peer_group, peer_asn);
+            } else {
+              LOG_ERR("rtr=%s: Failed to produce message: %s", router_ip.c_str(), RdKafka::err2str(resp).c_str());
+            }
             producer->poll(100);
         }
     } else {

@@ -196,7 +196,7 @@ void MPReachAttr::parseAfi_IPv4IPv6(bool isIPv4, mp_reach_nlri &nlri, UpdateMsg:
 
             parsed_data.attrs[ATTR_TYPE_NEXT_HOP] = std::string(ip_char);
 
-            // Data is an Label, IP address tuple parse and save it
+            // Data is a Label, IP address tuple parse and save it
             parseNlriData_LabelIPv4IPv6(isIPv4, nlri.nlri_data, nlri.nlri_len, peer_info, parsed_data.advertised);
             break;
 

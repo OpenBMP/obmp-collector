@@ -126,7 +126,7 @@ void parseBMP::parseBMPv2(int sock) {
 
     if ((i = Recv(sock, &c_hdr, BMP_HDRv1v2_LEN, MSG_WAITALL))
             != BMP_HDRv1v2_LEN) {
-        SELF_DEBUG("sock=%d: Couldn't read all bytes, read %zd bytes",
+        SELF_DEBUG("sock=%d: Couldn't read all bytes, read %d bytes",
                 sock, i);
         throw "ERROR: Cannot read v1/v2 BMP common header.";
     }
@@ -423,6 +423,7 @@ void parseBMP::parsePeerHdr(int sock) {
         != BMP_PEER_HDR_LEN) {
         LOG_ERR("sock=%d: Couldn't read all bytes, read %d bytes",
                 sock, i);
+      throw "ERROR: Cannot read all bytes for peer header";
     }
 
     // Adjust the common header length to remove the peer header (as it's been read)
