@@ -137,6 +137,9 @@ void msgBus_kafka::disconnect(int wait_ms) {
         }
     }
 
+
+    if (producer != NULL) producer->flush(5000);
+
     if (topicSel != NULL) delete topicSel;
 
     topicSel = NULL;

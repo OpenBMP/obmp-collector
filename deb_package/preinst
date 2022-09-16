@@ -1,9 +1,0 @@
-#!/bin/bash
-
-if [[ -f /etc/openbmp/openbmpd.conf ]]; then
-   cp /etc/openbmp/openbmpd.conf /etc/openbmp/openbmpd.conf.bak
-elif [[ -f /usr/etc/openbmp/openbmpd.conf ]]; then
-   cp /usr/etc/openbmp/openbmpd.conf /usr/etc/openbmp/openbmpd.conf.bak
-elif [[ -f /usr/local/etc/openbmp/openbmpd.conf ]]; then
-   cp /usr/local/etc/openbmp/openbmpd.conf /usr/local/etc/openbmp/openbmpd.conf.bak
-fi

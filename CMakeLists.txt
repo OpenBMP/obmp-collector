@@ -31,14 +31,5 @@ endif()
 # Add the Server directory
 add_subdirectory (Server)
 
-FIND_PROGRAM(DPKG_CMD dpkg)
-IF(DPKG_CMD)
-  add_subdirectory (deb_package)
-ENDIF(DPKG_CMD)
-
-FIND_PROGRAM(RPKG_CMD rpmbuild)
-IF(RPKG_CMD)
-  add_subdirectory (rpm_package)
-ENDIF(RPKG_CMD)
 
 

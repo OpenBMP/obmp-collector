@@ -227,6 +227,12 @@ void *ClientThread(void *arg) {
                         read_buf_pos += bytes_read;
                     }
                 }
+                else if (wrap_state and read_buf_pos > write_buf_pos and (read_buf_pos - write_buf_pos) <= 20000 ) {
+                    // buffer has wrapped and write (bmp sender side) is getting too close to the read position.
+                    //   Add a delay to pace things.
+                    LOG_INFO("%s: BMP message processing is falling behind buffer size. Delaying 200ms", cInfo.client->c_ip);
+                    usleep(200000);
+                }
             }
             else if (read_buf_pos >= thr->cfg->bmp_buffer_size) {
                 read_buf_pos = 0;

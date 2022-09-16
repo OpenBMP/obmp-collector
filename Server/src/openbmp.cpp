@@ -454,7 +454,7 @@ void runServer(Config &cfg) {
 
                 }
 
-		        else if (!thr_list.at(i)->baselineTimeout) {
+		            else if (!thr_list.at(i)->baselineTimeout) {
 
                     int initial_time = cfg.initial_router_time;
                     string hash(reinterpret_cast<char*>(thr_list.at(i)->client.hash_id), 16);
@@ -471,7 +471,7 @@ void runServer(Config &cfg) {
                         --concurrent_routers;
                     thr_list.at(i)->baselineTimeout = true;		// Indicating that this router is not counted in the concurrent routers count
                     }
-		        }
+		            }
 
                 //TODO: Add code to check for a socket that is open, but not really connected/half open
             }
