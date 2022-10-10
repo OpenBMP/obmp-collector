@@ -125,7 +125,7 @@ size_t UpdateMsg::parseUpdateMsg(u_char *data, size_t size, parsed_update_data &
      */
     if (not uHdr.withdrawn_len and (size - read_size) <= 0 and not uHdr.attr_len) {
 
-	peer_info->endOfRIB = true;		// Indicates End-of-RIB Marker received
+	      peer_info->endOfRIB = true;		// Indicates End-of-RIB Marker received
         LOG_INFO("%s: rtr=%s: End-Of-RIB marker", peer_addr.c_str(), router_addr.c_str());
 
     } else {

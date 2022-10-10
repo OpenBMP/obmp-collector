@@ -355,7 +355,7 @@ void parseBMP::parseBMPv3(int sock) {
 void parseBMP::parsePeerFlags(u_char peer_type, u_char peer_flags) {
 
     switch (peer_type) {
-        case 3: // Local RIB (draft-ietf-grow-bmp-local-rib)
+        case 3: // Local RIB (RFC9069)
             p_entry->isLocRib = true;
 
             if (peer_flags & 0x80) {  // Indicates if the local-rib is filtered

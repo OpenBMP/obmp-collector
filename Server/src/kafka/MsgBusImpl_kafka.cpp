@@ -549,15 +549,30 @@ void msgBus_kafka::update_Peer(obj_bgp_peer &peer, obj_peer_up_event *up, obj_pe
 
     // Generate the hash
     MD5 hash;
+    unsigned char peer_type = 0;
+
 
     hash.update((unsigned char *) peer.peer_addr,
                 strlen(peer.peer_addr));
     hash.update((unsigned char *) peer.peer_rd, strlen(peer.peer_rd));
     hash.update((unsigned char *)r_hash_str.c_str(), r_hash_str.length());
 
+    if (peer.isLocRib) { // Local-RIB, include in hash to make it different
+      peer_type |= 0x80;
+      hash.update((unsigned char *) &peer_type, 1);
+    }
+
+    /* Note: RFC7854 doesn't indicate if PEER_UP should be sent for each flag type, such as Adj-RIB-In pre, post, ...
+     *   It is assumed that only one peer up will be sent regardless of pre/post policy. Therefore,
+     *   pre/post and in/out is hashed at the route monitor/mirror level.
+     *
+     * TODO: Change this when bis or new RFC updates 7854.
+     */
+
     /* TODO: Uncomment once this is fixed in XR
      * Disable hashing the bgp peer ID since XR has an issue where it sends 0.0.0.0 on subsequent PEER_UP's
      *    This will be fixed in XR, but for now we can disable hashing on it.
+     * To Re-enable, need to add a configuration option to support existing deployments without this in the hash
      *
     hash.update((unsigned char *) p_object.peer_bgp_id,
             strlen(p_object.peer_bgp_id));
@@ -801,6 +816,16 @@ void msgBus_kafka::update_L3Vpn(obj_bgp_peer &peer, std::vector<obj_vpn> &vpn,
             buf2[0] = 0;
         }
 
+        /*
+         * Support backwards compatibility with NLRI hashing by not including rib type. Current did not hash
+         *    if adj-rib-in and pre-policy.  If it's anything else, then add an extra byte/type to hash.
+         */
+        if (not (peer.isAdjIn and peer.isPrePolicy)) {
+          buf2[0] |= peer.isAdjIn ? 0 : 0x01;
+          buf2[0] |= peer.isPrePolicy ? 0 : 0x02;
+          hash.update((unsigned char *) buf2, 1);
+        }
+
         hash.finalize();
 
         // Save the hash
@@ -909,7 +934,18 @@ void msgBus_kafka::update_eVPN(obj_bgp_peer &peer, std::vector<obj_evpn> &vpn,
         if (vpn[i].path_id > 0)
             hash.update((unsigned char *)&vpn[i].path_id, sizeof(vpn[i].path_id));
 
-        hash.finalize();
+      /*
+       * Support backwards compatibility with NLRI hashing by not including rib type. Current did not hash
+       *    if adj-rib-in and pre-policy.  If it's anything else, then add an extra byte/type to hash.
+       */
+      if (not (peer.isAdjIn and peer.isPrePolicy)) {
+        buf2[0] |= peer.isAdjIn ? 0 : 0x01;
+        buf2[0] |= peer.isPrePolicy ? 0 : 0x02;
+        hash.update((unsigned char *) buf2, 1);
+      }
+
+
+      hash.finalize();
 
         // Save the hash
         unsigned char *hash_raw = hash.raw_digest();
@@ -1036,6 +1072,17 @@ void msgBus_kafka::update_unicastPrefix(obj_bgp_peer &peer, std::vector<obj_rib>
             buf2[0] = 0;
         }
 
+      /*
+       * Support backwards compatibility with NLRI hashing by not including rib type. Current did not hash
+       *    if adj-rib-in and pre-policy.  If it's anything else, then add an extra byte/type to hash.
+       */
+      if (not (peer.isAdjIn and peer.isPrePolicy)) {
+        buf2[0] |= peer.isAdjIn ? 0 : 0x01;
+        buf2[0] |= peer.isPrePolicy ? 0 : 0x02;
+        hash.update((unsigned char *) buf2, 1);
+      }
+
+
         hash.finalize();
 
         // Save the hash
@@ -1084,7 +1131,7 @@ void msgBus_kafka::update_unicastPrefix(obj_bgp_peer &peer, std::vector<obj_rib>
             strcat(prep_buf, buf2);
 
         ++unicast_prefix_seq;
-	++ribSeq;
+      	++ribSeq;
     }
 
 
@@ -1165,6 +1212,7 @@ void msgBus_kafka::update_LsNode(obj_bgp_peer &peer, obj_path_attr &attr, std::l
             it != nodes.end(); it++) {
         ++rows;
         MsgBusInterface::obj_ls_node &node = (*it);
+
 
         hash_toStr(node.hash_id, hash_str);
 
